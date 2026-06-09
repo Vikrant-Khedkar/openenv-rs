@@ -7,6 +7,7 @@ members = [
     "crates/openenv-mcp",
     "crates/openenv-rubrics",
     "crates/openenv-harness",
+    "crates/openenv-cli",
     "envs/echo",
     "envs/grid-world",
     "envs/connect4",
