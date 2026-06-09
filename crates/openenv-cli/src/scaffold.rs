@@ -130,7 +130,7 @@ async fn main() -> std::io::Result<()> {{
     std::fs::write(
         dir.join("Dockerfile"),
         format!(
-            r#"FROM rust:1.83-slim AS builder
+            r#"FROM rust:1.87-slim AS builder
 WORKDIR /app
 COPY . .
 RUN cargo build --release

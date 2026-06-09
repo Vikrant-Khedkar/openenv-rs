@@ -1,5 +1,5 @@
 # Build from the repo root: docker build -f envs/echo/Dockerfile -t echo-env .
-FROM rust:1.83-slim AS builder
+FROM rust:1.87-slim AS builder
 WORKDIR /app
 COPY . .
 RUN cargo build --release -p echo-env
