@@ -20,14 +20,15 @@ pub trait Rubric: Send {
     }
 }
 
-type Hook = Box<dyn Fn(&Value, &Value, f64) + Send>;
+type PreHook = Box<dyn Fn(&Value, &Value) + Send>;
+type PostHook = Box<dyn Fn(&Value, &Value, f64) + Send>;
 
 /// Wraps a rubric with pre/post forward hooks and `last_score` caching,
 /// the counterpart of Python `Rubric.__call__`.
 pub struct RubricRunner {
     rubric: Box<dyn Rubric>,
-    pre_hooks: Vec<Box<dyn Fn(&Value, &Value) + Send>>,
-    post_hooks: Vec<Hook>,
+    pre_hooks: Vec<PreHook>,
+    post_hooks: Vec<PostHook>,
     last_score: Option<f64>,
 }
 
