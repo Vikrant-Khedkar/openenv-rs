@@ -86,10 +86,8 @@ impl SnakeEnvironment {
 
     fn grid(&self) -> Vec<Vec<u8>> {
         let mut grid = vec![vec![EMPTY; self.width]; self.height];
-        for x in 0..self.width {
-            grid[0][x] = WALL;
-            grid[self.height - 1][x] = WALL;
-        }
+        grid[0].fill(WALL);
+        grid[self.height - 1].fill(WALL);
         for row in grid.iter_mut() {
             row[0] = WALL;
             row[self.width - 1] = WALL;
