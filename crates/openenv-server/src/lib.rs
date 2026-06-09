@@ -39,7 +39,7 @@ impl EnvServer {
         E: Environment,
         F: Fn() -> E + Send + Sync + 'static,
     {
-        let factory: EnvFactory = Arc::new(move || Box::new(factory()));
+        let factory: EnvFactory = Arc::new(move || openenv_core::DynEnv::boxed(factory()));
         let http_env = Arc::new(Mutex::new(factory()));
         Self {
             state: ServerState {

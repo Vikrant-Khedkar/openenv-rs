@@ -5,6 +5,9 @@ members = [
     "crates/openenv-server",
     "crates/openenv-client",
     "envs/echo",
+    "envs/grid-world",
+    "envs/connect4",
+    "envs/maze",
 ]
 
 [workspace.package]

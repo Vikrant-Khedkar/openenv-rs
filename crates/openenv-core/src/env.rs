@@ -44,21 +44,32 @@ pub trait DynEnvironment: Send {
     fn close(&mut self);
 }
 
-impl<E: Environment> DynEnvironment for E {
+/// Adapter that exposes a typed [`Environment`] as a [`DynEnvironment`].
+/// A wrapper (rather than a blanket impl) so typed env methods stay
+/// unambiguous at call sites.
+pub struct DynEnv<E>(pub E);
+
+impl<E: Environment> DynEnv<E> {
+    pub fn boxed(env: E) -> Box<dyn DynEnvironment> {
+        Box::new(Self(env))
+    }
+}
+
+impl<E: Environment> DynEnvironment for DynEnv<E> {
     fn reset(&mut self, req: ResetRequest) -> Result<StepResponse, EnvError> {
-        let obs = Environment::reset(self, req)?;
+        let obs = self.0.reset(req)?;
         split_observation(serialize(&obs)?)
     }
 
     fn step(&mut self, action: Value) -> Result<StepResponse, EnvError> {
         let action: E::Action =
             serde_json::from_value(action).map_err(|e| EnvError::Validation(e.to_string()))?;
-        let obs = Environment::step(self, action)?;
+        let obs = self.0.step(action)?;
         split_observation(serialize(&obs)?)
     }
 
     fn state(&self) -> Result<Value, EnvError> {
-        serialize(&Environment::state(self))
+        serialize(&self.0.state())
     }
 
     fn schemas(&self) -> SchemaResponse {
@@ -70,11 +81,11 @@ impl<E: Environment> DynEnvironment for E {
     }
 
     fn metadata(&self) -> EnvironmentMetadata {
-        Environment::metadata(self)
+        self.0.metadata()
     }
 
     fn close(&mut self) {
-        Environment::close(self)
+        self.0.close()
     }
 }
 
@@ -175,7 +186,7 @@ mod tests {
 
     #[test]
     fn dyn_env_round_trip() {
-        let mut env: Box<dyn DynEnvironment> = Box::new(Echo::default());
+        let mut env: Box<dyn DynEnvironment> = DynEnv::boxed(Echo::default());
 
         let r = env
             .reset(ResetRequest {
@@ -196,7 +207,7 @@ mod tests {
 
     #[test]
     fn dyn_env_invalid_action_is_validation_error() {
-        let mut env: Box<dyn DynEnvironment> = Box::new(Echo::default());
+        let mut env: Box<dyn DynEnvironment> = DynEnv::boxed(Echo::default());
         let err = env.step(json!({"wrong": 1})).unwrap_err();
         assert!(matches!(err, EnvError::Validation(_)));
     }
@@ -214,7 +225,7 @@ mod tests {
 
     #[test]
     fn schemas_are_objects() {
-        let env: Box<dyn DynEnvironment> = Box::new(Echo::default());
+        let env: Box<dyn DynEnvironment> = DynEnv::boxed(Echo::default());
         let s = env.schemas();
         assert!(s.action.is_object());
         assert!(s.observation.is_object());
