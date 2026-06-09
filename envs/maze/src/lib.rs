@@ -193,7 +193,7 @@ mod tests {
         let mut env = MazeEnvironment::default();
         env.reset(ResetRequest::default()).unwrap();
         let mut done = false;
-        for i in 0..200 {
+        for i in 0..200u32 {
             let a = if i.is_multiple_of(2) {
                 MOVE_RIGHT
             } else {
