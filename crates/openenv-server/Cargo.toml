@@ -19,3 +19,4 @@ uuid.workspace = true
 [dev-dependencies]
 schemars.workspace = true
 reqwest.workspace = true
+tokio-tungstenite.workspace = true

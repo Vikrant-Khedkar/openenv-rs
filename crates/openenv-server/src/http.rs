@@ -19,6 +19,7 @@ pub fn create_router(state: ServerState) -> Router {
         .route("/metadata", get(metadata))
         .route("/health", get(health))
         .route("/schema", get(schema))
+        .route("/ws", get(crate::ws::ws_handler))
         .with_state(state)
 }
 
