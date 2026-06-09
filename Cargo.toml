@@ -1,0 +1,54 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/openenv-core",
+    "crates/openenv-server",
+    "crates/openenv-client",
+    "crates/openenv-mcp",
+    "crates/openenv-rubrics",
+    "crates/openenv-harness",
+    "crates/openenv-cli",
+    "envs/echo",
+    "envs/grid-world",
+    "envs/connect4",
+    "envs/maze",
+    "envs/snake",
+    "envs/wildfire",
+    "envs/chess",
+    "envs/websearch",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "BSD-3-Clause"
+repository = "https://github.com/Vikrant-Khedkar/openenv-rs"
+
+[workspace.dependencies]
+openenv-core = { path = "crates/openenv-core" }
+openenv-server = { path = "crates/openenv-server" }
+openenv-client = { path = "crates/openenv-client" }
+openenv-mcp = { path = "crates/openenv-mcp" }
+openenv-rubrics = { path = "crates/openenv-rubrics" }
+openenv-harness = { path = "crates/openenv-harness" }
+
+tokio = { version = "1", features = ["full"] }
+axum = { version = "0.8", features = ["ws"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+schemars = "0.8"
+tokio-tungstenite = "0.26"
+reqwest = { version = "0.12", features = ["json"] }
+clap = { version = "4", features = ["derive"] }
+thiserror = "2"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+futures-util = "0.3"
+async-trait = "0.1"
+uuid = { version = "1", features = ["v4"] }
+rand = "0.8"
+shakmaty = "0.27"
+
+[profile.release]
+lto = "thin"
