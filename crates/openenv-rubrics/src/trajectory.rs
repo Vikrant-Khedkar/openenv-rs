@@ -73,10 +73,12 @@ where
     }
 }
 
+type ScoreFn = fn(&[(Value, Value)]) -> f64;
+
 /// Chess-style win/loss rubric: terminal score is the final observation's
 /// reward (+1 win, -1 loss, 0 draw), discounted per step.
 pub struct WinLossRubric {
-    inner: ExponentialDiscounting<fn(&[(Value, Value)]) -> f64>,
+    inner: ExponentialDiscounting<ScoreFn>,
 }
 
 fn last_reward(trajectory: &[(Value, Value)]) -> f64 {
