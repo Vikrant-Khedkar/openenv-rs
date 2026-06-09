@@ -1,9 +1,11 @@
 mod client;
 mod error;
+pub mod providers;
 
 pub use client::{BlockingEnvClient, EnvClient};
 pub use error::ClientError;
 pub use openenv_core::StepResponse as StepResult;
+pub use providers::{wait_for_ready, ContainerProvider, LocalDockerProvider};
 
 /// Convert an http(s) base URL to the ws(s) URL of the `/ws` endpoint,
 /// mirroring Python's `convert_to_ws_url`.

@@ -12,6 +12,7 @@ use crate::ws_url;
 /// Python `EnvClient`. One client = one server-side session.
 pub struct EnvClient {
     ws: WebSocketStream<MaybeTlsStream<TcpStream>>,
+    provider: Option<Box<dyn crate::providers::ContainerProvider>>,
 }
 
 impl EnvClient {
@@ -21,7 +22,21 @@ impl EnvClient {
         let (ws, _) = tokio_tungstenite::connect_async(&url)
             .await
             .map_err(|e| ClientError::Connection(e.to_string()))?;
-        Ok(Self { ws })
+        Ok(Self { ws, provider: None })
+    }
+
+    /// Launch a Docker container for `image`, wait for `/health`, and connect.
+    /// The container is stopped when the client is closed, mirroring Python's
+    /// `EnvClient.from_docker_image`.
+    pub async fn from_docker_image(image: &str) -> Result<Self, ClientError> {
+        use crate::providers::{ContainerProvider, LocalDockerProvider};
+
+        let mut provider = LocalDockerProvider::new();
+        let base_url = provider.start_container(image, None, &Default::default())?;
+        crate::providers::wait_for_ready(&base_url, std::time::Duration::from_secs(30)).await?;
+        let mut client = Self::connect(&base_url).await?;
+        client.provider = Some(Box::new(provider));
+        Ok(client)
     }
 
     pub async fn reset(&mut self, req: ResetRequest) -> Result<StepResponse, ClientError> {
@@ -51,11 +66,11 @@ impl EnvClient {
 
     pub async fn close(mut self) -> Result<(), ClientError> {
         let msg = json!({"type": "close", "data": {}});
-        self.ws
-            .send(Message::Text(msg.to_string().into()))
-            .await
-            .map_err(|e| ClientError::Connection(e.to_string()))?;
+        let _ = self.ws.send(Message::Text(msg.to_string().into())).await;
         let _ = self.ws.close(None).await;
+        if let Some(mut provider) = self.provider.take() {
+            provider.stop_container()?;
+        }
         Ok(())
     }
 
