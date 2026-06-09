@@ -54,7 +54,8 @@ impl EnvClient {
     }
 
     pub async fn state(&mut self) -> Result<Value, ClientError> {
-        let resp = self.request(json!({"type": "state", "data": {}})).await?;
+        // No `data` field: Python's WSStateMessage forbids extra fields.
+        let resp = self.request(json!({"type": "state"})).await?;
         expect_type(resp, "state")
     }
 
@@ -65,7 +66,7 @@ impl EnvClient {
     }
 
     pub async fn close(mut self) -> Result<(), ClientError> {
-        let msg = json!({"type": "close", "data": {}});
+        let msg = json!({"type": "close"});
         let _ = self.ws.send(Message::Text(msg.to_string().into())).await;
         let _ = self.ws.close(None).await;
         if let Some(mut provider) = self.provider.take() {
