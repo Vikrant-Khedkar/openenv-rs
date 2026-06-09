@@ -10,6 +10,8 @@ members = [
     "envs/maze",
     "envs/snake",
     "envs/wildfire",
+    "envs/chess",
+    "envs/websearch",
 ]
 
 [workspace.package]

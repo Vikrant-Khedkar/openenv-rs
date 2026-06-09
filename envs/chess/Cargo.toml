@@ -1,0 +1,21 @@
+[package]
+name = "chess-env"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+openenv-core.workspace = true
+openenv-server.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+schemars.workspace = true
+tokio.workspace = true
+uuid.workspace = true
+rand.workspace = true
+shakmaty.workspace = true
+
+[[bin]]
+name = "chess-env"
+path = "src/main.rs"
