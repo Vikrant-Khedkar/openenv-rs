@@ -8,6 +8,8 @@ members = [
     "envs/grid-world",
     "envs/connect4",
     "envs/maze",
+    "envs/snake",
+    "envs/wildfire",
 ]
 
 [workspace.package]
