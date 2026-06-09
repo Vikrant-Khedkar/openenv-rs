@@ -155,6 +155,15 @@ async fn http_endpoints_match_python_wire_format() {
 }
 
 #[tokio::test]
+async fn web_console_served() {
+    let base = spawn_server().await;
+    let resp = reqwest::get(format!("{base}/web")).await.unwrap();
+    assert_eq!(resp.status(), 200);
+    let body = resp.text().await.unwrap();
+    assert!(body.contains("OpenEnv Console"));
+}
+
+#[tokio::test]
 async fn invalid_action_returns_422() {
     let base = spawn_server().await;
     let client = reqwest::Client::new();

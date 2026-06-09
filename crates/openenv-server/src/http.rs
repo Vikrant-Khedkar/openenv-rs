@@ -20,6 +20,7 @@ pub fn create_router(state: ServerState) -> Router {
         .route("/health", get(health))
         .route("/schema", get(schema))
         .route("/mcp", post(mcp))
+        .route("/web", get(web_console))
         .route("/ws", get(crate::ws::ws_handler))
         .with_state(state)
 }
@@ -81,4 +82,8 @@ async fn schema(State(state): State<ServerState>) -> Json<SchemaResponse> {
 async fn mcp(State(state): State<ServerState>, Json(raw): Json<Value>) -> Json<Value> {
     let resp = crate::handle_mcp(&state, raw);
     Json(serde_json::to_value(resp).expect("JsonRpcResponse serializes"))
+}
+
+async fn web_console() -> axum::response::Html<&'static str> {
+    axum::response::Html(include_str!("web/console.html"))
 }

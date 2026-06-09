@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenEnv Console</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #0d1117; color: #e6edf3; margin: 0; padding: 2rem; }
+  h1 { font-size: 1.3rem; margin: 0 0 .25rem; }
+  .sub { color: #8b949e; margin-bottom: 1.5rem; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; }
+  .card h2 { font-size: .9rem; text-transform: uppercase; letter-spacing: .08em; color: #8b949e; margin: 0 0 .75rem; }
+  label { display: block; font-size: .8rem; color: #8b949e; margin: .5rem 0 .2rem; }
+  input, textarea { width: 100%; background: #0d1117; color: #e6edf3; border: 1px solid #30363d; border-radius: 6px; padding: .45rem .6rem; font: inherit; }
+  textarea { min-height: 7rem; resize: vertical; }
+  button { background: #238636; color: #fff; border: 0; border-radius: 6px; padding: .5rem 1rem; font: inherit; cursor: pointer; margin: .75rem .5rem 0 0; }
+  button.alt { background: #1f6feb; }
+  button.warn { background: #6e4017; }
+  pre { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: .75rem; overflow: auto; max-height: 24rem; white-space: pre-wrap; }
+  .pill { display: inline-block; padding: .1rem .55rem; border-radius: 999px; font-size: .75rem; margin-left: .5rem; }
+  .ok { background: #1a7f37; } .bad { background: #b62324; }
+</style>
+</head>
+<body>
+  <h1 id="env-name">OpenEnv Console</h1>
+  <div class="sub" id="env-desc">…</div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Action</h2>
+      <div id="form"></div>
+      <label>Raw action JSON (overrides form when edited)</label>
+      <textarea id="raw" spellcheck="false"></textarea>
+      <button onclick="doReset()">Reset</button>
+      <button class="alt" onclick="doStep()">Step</button>
+      <button class="warn" onclick="loadState()">State</button>
+    </div>
+    <div class="card">
+      <h2>Result <span id="status"></span></h2>
+      <pre id="out">—</pre>
+      <h2>State</h2>
+      <pre id="state">—</pre>
+    </div>
+  </div>
+
+<script>
+let schema = null, rawDirty = false;
+const $ = id => document.getElementById(id);
+
+async function init() {
+  try {
+    const meta = await (await fetch('metadata')).json();
+    $('env-name').textContent = meta.name;
+    $('env-desc').textContent = meta.description || '';
+  } catch {}
+  try {
+    schema = (await (await fetch('schema')).json()).action;
+    buildForm(schema);
+    syncRaw();
+  } catch (e) {
+    $('out').textContent = 'Failed to load schema: ' + e;
+  }
+}
+
+function buildForm(s) {
+  const props = (s && s.properties) || {};
+  const form = $('form');
+  for (const [name, spec] of Object.entries(props)) {
+    if (name === 'metadata') continue;
+    const label = document.createElement('label');
+    label.textContent = name + (spec.type ? ` (${spec.type})` : '');
+    const input = document.createElement('input');
+    input.dataset.field = name;
+    input.dataset.type = spec.type || 'string';
+    input.placeholder = spec.description || '';
+    input.addEventListener('input', () => { rawDirty = false; syncRaw(); });
+    form.append(label, input);
+  }
+}
+
+function formAction() {
+  const action = {};
+  for (const input of document.querySelectorAll('#form input')) {
+    const v = input.value;
+    if (v === '') continue;
+    const t = input.dataset.type;
+    action[input.dataset.field] =
+      t === 'integer' || t === 'number' ? Number(v) :
+      t === 'boolean' ? v === 'true' :
+      v;
+  }
+  return action;
+}
+
+function syncRaw() {
+  if (!rawDirty) $('raw').value = JSON.stringify(formAction(), null, 2);
+}
+$('raw').addEventListener('input', () => { rawDirty = true; });
+
+function show(el, data, isErr) {
+  $(el).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+  if (el === 'out') {
+    $('status').className = 'pill ' + (isErr ? 'bad' : 'ok');
+    $('status').textContent = isErr ? 'error' : 'ok';
+  }
+}
+
+async function doReset() {
+  try {
+    const r = await fetch('reset', { method: 'POST', headers: {'content-type': 'application/json'}, body: '{}' });
+    show('out', await r.json(), !r.ok);
+    loadState();
+  } catch (e) { show('out', String(e), true); }
+}
+
+async function doStep() {
+  let action;
+  try { action = JSON.parse($('raw').value || '{}'); }
+  catch (e) { return show('out', 'Invalid action JSON: ' + e, true); }
+  try {
+    const r = await fetch('step', { method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({ action }) });
+    show('out', await r.json(), !r.ok);
+    loadState();
+  } catch (e) { show('out', String(e), true); }
+}
+
+async function loadState() {
+  try { show('state', await (await fetch('state')).json()); }
+  catch (e) { show('state', String(e)); }
+}
+
+init();
+</script>
+</body>
+</html>
