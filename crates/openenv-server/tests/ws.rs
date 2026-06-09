@@ -163,12 +163,15 @@ async fn ws_error_codes() {
     let resp = round_trip(&mut ws, json!({"type": "step", "data": {"wrong": 1}})).await;
     assert_eq!(resp["data"]["code"], "VALIDATION_ERROR");
 
+    // No MCP registry attached: JSON-RPC error inside an mcp response,
+    // matching Python's "Environment does not support MCP".
     let resp = round_trip(
         &mut ws,
         json!({"type": "mcp", "data": {"jsonrpc": "2.0", "method": "tools/list", "id": 1}}),
     )
     .await;
-    assert_eq!(resp["data"]["code"], "EXECUTION_ERROR");
+    assert_eq!(resp["type"], "mcp");
+    assert_eq!(resp["data"]["error"]["code"], -32603);
 }
 
 #[tokio::test]

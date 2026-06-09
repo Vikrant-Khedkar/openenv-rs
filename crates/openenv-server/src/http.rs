@@ -19,6 +19,7 @@ pub fn create_router(state: ServerState) -> Router {
         .route("/metadata", get(metadata))
         .route("/health", get(health))
         .route("/schema", get(schema))
+        .route("/mcp", post(mcp))
         .route("/ws", get(crate::ws::ws_handler))
         .with_state(state)
 }
@@ -75,4 +76,9 @@ async fn health() -> Json<HealthResponse> {
 async fn schema(State(state): State<ServerState>) -> Json<SchemaResponse> {
     let env = state.http_env.lock().await;
     Json(env.schemas())
+}
+
+async fn mcp(State(state): State<ServerState>, Json(raw): Json<Value>) -> Json<Value> {
+    let resp = crate::handle_mcp(&state, raw);
+    Json(serde_json::to_value(resp).expect("JsonRpcResponse serializes"))
 }

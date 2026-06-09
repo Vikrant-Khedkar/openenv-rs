@@ -104,9 +104,12 @@ async fn handle_session(state: ServerState, mut socket: WebSocket) {
                 env.step(data).map(|data| WsOutgoing::Observation { data })
             }
             WsIncoming::State { .. } => env.state().map(|data| WsOutgoing::State { data }),
-            WsIncoming::Mcp { .. } => Err(openenv_core::EnvError::Execution(
-                "MCP is not supported by this environment".into(),
-            )),
+            WsIncoming::Mcp { data } => {
+                let resp = crate::handle_mcp(&state, data);
+                Ok(WsOutgoing::Mcp {
+                    data: serde_json::to_value(resp).expect("JsonRpcResponse serializes"),
+                })
+            }
             WsIncoming::Close { .. } => break,
         };
 

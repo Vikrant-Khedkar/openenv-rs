@@ -7,6 +7,7 @@ repository.workspace = true
 
 [dependencies]
 openenv-core.workspace = true
+openenv-mcp.workspace = true
 axum.workspace = true
 tokio.workspace = true
 serde.workspace = true

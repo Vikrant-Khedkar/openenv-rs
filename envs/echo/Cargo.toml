@@ -8,6 +8,7 @@ repository.workspace = true
 [dependencies]
 openenv-core.workspace = true
 openenv-server.workspace = true
+openenv-mcp.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 schemars.workspace = true

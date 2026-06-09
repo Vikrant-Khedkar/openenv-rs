@@ -274,6 +274,7 @@ name = "echo-env"
 version = "0.1.0"
 dependencies = [
  "openenv-core",
+ "openenv-mcp",
  "openenv-server",
  "schemars",
  "serde",
@@ -965,12 +966,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "openenv-mcp"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "openenv-server"
 version = "0.1.0"
 dependencies = [
  "axum",
  "futures-util",
  "openenv-core",
+ "openenv-mcp",
  "reqwest",
  "schemars",
  "serde",

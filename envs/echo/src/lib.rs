@@ -73,3 +73,43 @@ impl Environment for EchoEnvironment {
         EnvironmentMetadata::new("echo_env", "Echoes back messages sent to it")
     }
 }
+
+/// MCP tools matching Python echo_env: `echo_message` and `echo_with_length`.
+pub fn mcp_tools() -> openenv_mcp::ToolRegistry {
+    use serde_json::json;
+
+    let message_schema = json!({
+        "type": "object",
+        "properties": {"message": {"type": "string"}},
+        "required": ["message"],
+    });
+
+    let mut reg = openenv_mcp::ToolRegistry::new();
+    reg.register(
+        "echo_message",
+        "Echo back the provided message",
+        message_schema.clone(),
+        |args| {
+            let msg = args
+                .get("message")
+                .and_then(|v| v.as_str())
+                .ok_or("missing 'message' argument")?;
+            Ok(json!(msg))
+        },
+    )
+    .expect("valid tool name");
+    reg.register(
+        "echo_with_length",
+        "Echo back the message with its length",
+        message_schema,
+        |args| {
+            let msg = args
+                .get("message")
+                .and_then(|v| v.as_str())
+                .ok_or("missing 'message' argument")?;
+            Ok(json!(format!("{msg} (length: {})", msg.chars().count())))
+        },
+    )
+    .expect("valid tool name");
+    reg
+}
