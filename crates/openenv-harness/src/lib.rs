@@ -126,7 +126,7 @@ mod tests {
                 json!({"role": "user", "content": format!("task {i}")}),
                 json!({"role": "assistant", "content": "answer"}),
             ],
-            if i % 2 == 0 { 1.0 } else { 0.0 },
+            if i.is_multiple_of(2) { 1.0 } else { 0.0 },
             true,
         );
         rec.metrics.insert("steps".into(), json!(i));

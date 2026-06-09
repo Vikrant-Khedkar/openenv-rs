@@ -194,7 +194,11 @@ mod tests {
         env.reset(ResetRequest::default()).unwrap();
         let mut done = false;
         for i in 0..200 {
-            let a = if i % 2 == 0 { MOVE_RIGHT } else { MOVE_LEFT };
+            let a = if i.is_multiple_of(2) {
+                MOVE_RIGHT
+            } else {
+                MOVE_LEFT
+            };
             let obs = env.step(MazeAction { action: a }).unwrap();
             if obs.done {
                 assert_eq!(obs.metadata["status"], "lose");
