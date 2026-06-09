@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/openenv-core",
     "crates/openenv-server",
+    "crates/openenv-client",
     "envs/echo",
 ]
 
