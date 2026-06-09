@@ -1,6 +1,0 @@
-[package]
-name = "connect4-env"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-repository.workspace = true

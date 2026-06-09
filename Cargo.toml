@@ -3,19 +3,7 @@ resolver = "2"
 members = [
     "crates/openenv-core",
     "crates/openenv-server",
-    "crates/openenv-client",
-    "crates/openenv-mcp",
-    "crates/openenv-rubrics",
-    "crates/openenv-harness",
-    "crates/openenv-cli",
     "envs/echo",
-    "envs/grid-world",
-    "envs/connect4",
-    "envs/maze",
-    "envs/snake",
-    "envs/wildfire",
-    "envs/chess",
-    "envs/websearch",
 ]
 
 [workspace.package]
